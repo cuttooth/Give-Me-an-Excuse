@@ -45,10 +45,19 @@ public class GiveMeAnExcuse {
 	
 	private static String USER_NAME = "givemeanexcuse@gmail.com"; 
 	private static JTextArea display;
+	
+	//stats
+	private static int messagesReceived = 0,
+			repliesSent = 0,
+			uniqueUsersThisSession = 0;
+	
+	private List<String> uniqueUsers = new ArrayList<String>();
 		
 	private static int WIDTH = 850, HEIGHT = 550;
 		
     public static void main(String[] args) throws Exception{
+    	
+    	long startTime = System.nanoTime();
     	
     	Arrays.sort(args);
     	if (Arrays.binarySearch(args, "nogui") != -1)
@@ -56,7 +65,21 @@ public class GiveMeAnExcuse {
     	else
     		createAndShowGUI();
     	
-    	start();
+    	Thread worker = new Thread(new Runnable() {
+    		public void run(){
+    			try {
+					start();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+    		}
+    	});
+    	worker.start();
+    	
+    	long elapsed = (System.nanoTime() - startTime) / 1000000; //calculates difference then converts to milliseconds
+    	
+    	append("Initialized in " + elapsed + "ms");
+    	append("Type 'help' for help.");
     }
     
     public static void createAndShowGUI() throws Exception{
@@ -73,15 +96,20 @@ public class GiveMeAnExcuse {
     	Container pane = frame.getContentPane();
     	pane.setLayout(new BoxLayout(pane, BoxLayout.X_AXIS));
     	
-    	int statWidth = WIDTH / 4;
+    	int statWidth = WIDTH / 4; //TODO may need to make this wider based on length of users
     	
     	JPanel stats = new JPanel();
-    	stats.setBorder(BorderFactory.createTitledBorder("Connected this session")); //TODO  rename title to "stats" once you've thought of some stats
+    	stats.setBorder(BorderFactory.createTitledBorder("Stats"));
     	stats.setMaximumSize(new Dimension(statWidth, HEIGHT));
-    	stats.setLayout(new BoxLayout(stats, BoxLayout.Y_AXIS));
+//    	stats.setLayout(new BoxLayout(stats, BoxLayout.Y_AXIS));
+    	stats.setLayout(new BorderLayout());
     	
-    	JPanel numbers = new JPanel();
-    	
+    	JTextArea numbers = new JTextArea();
+    	numbers.setFont(new Font("courier", Font.PLAIN, 12));
+    	numbers.setLineWrap(true);
+    	numbers.setWrapStyleWord(true);
+    	numbers.setEditable(false);
+    	    	
     	JPanel session = new JPanel();
     	session.setBorder(BorderFactory.createTitledBorder("Session"));
     	session.setLayout(new GridLayout(1, 1));
@@ -94,12 +122,10 @@ public class GiveMeAnExcuse {
     	JScrollPane playScroll = new JScrollPane(players);
     	playScroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
     	
-//    	session.add(playScroll); //TODO uncomment these lines once you've thought of some stats
+    	session.add(playScroll);//TODO uncomment these lines once you've thought of some stats
     	
-//    	stats.add(numbers);
-//    	stats.add(session);
-    	
-    	stats.add(playScroll);
+    	stats.add(numbers, BorderLayout.NORTH);
+    	stats.add(session, BorderLayout.CENTER);
     	
     	JPanel log = new JPanel();
     	log.setBorder(BorderFactory.createTitledBorder("Log"));
@@ -134,19 +160,37 @@ public class GiveMeAnExcuse {
     }
     
     public static void command(String msg) {
-    	
-    	append(1, msg);
+    	Scanner msgScanner = new Scanner(msg);
+    	if (msgScanner.next().equals("help")) {
+//    		for (Command com : commands) {
+//    			
+//    		}
+    	}
+    	msgScanner.close();
+    	append(COMMAND, msg);
     }
     
     public static void append(String msg) {
-    	append(0, msg);
+    	append(INFO, msg);
     }
     
     public static void append(int code, String msg) {
     	switch(code) {
+    		case INFO: display.append("[INFO] "); break;
     		case COMMAND: display.append("[COMMAND] "); break;
+    		case SEVERE: display.append("[SEVERE] "); break;
     	}
     	display.append(msg + "\n");
+    }
+    
+    //TODO creates string of stats to set numbers's text to
+    public static void formatStats() {
+    	
+    }
+    
+    //TODO will add users to list if not already on it
+    public static void updateUsers(String address) {
+    	
     }
     
     public static void start() throws Exception{
@@ -207,13 +251,16 @@ public class GiveMeAnExcuse {
                 	MimeMessage message = new MimeMessage(session);  
 	                
 	                for (Address address : in) {
-	                    System.out.println("FROM:" + address.toString());
-	                    
+	                	append("Request from: " + address.toString() + " [" + msg.getContent() + "]");
+	                	updateUsers(address.toString());
+	                    messagesReceived++;
 	                    message.setFrom(new InternetAddress(from));
 	                    InternetAddress toAddress = new InternetAddress(address.toString());
 	                    message.setRecipient(Message.RecipientType.TO, toAddress);
 
-	                    message.setText(excuses.get(gen.nextInt(size)));
+	                    String exc = excuses.get(gen.nextInt(size));
+	                    message.setText(exc);
+	                    append("Responded with: " + exc);
 	                    
 	                    Transport transport = session.getTransport("smtp");
 	                    transport.connect("smtp.gmail.com", from, pass);
@@ -222,6 +269,7 @@ public class GiveMeAnExcuse {
 	                }
         		}
         	}
+        	formatStats();
         }
     }
 }//beautiful cascading brackets
