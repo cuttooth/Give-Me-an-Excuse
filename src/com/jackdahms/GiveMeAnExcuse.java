@@ -6,16 +6,12 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Scanner;
@@ -30,22 +26,21 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
-import javax.swing.JButton;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.UIManager;
-import javax.swing.border.Border;
 
 public class GiveMeAnExcuse {
 	
 	public static final int INFO = 0,
 							COMMAND = 1,
-							SEVERE = 2;
+							SEVERE = 2, //TODO remove throw statements, add tries and catches
+							REQUEST = 3,
+							RESPONSE = 4;
 	
 	private static String USER_NAME = "givemeanexcuse@gmail.com"; 
 	private static JTextArea display, users;
@@ -83,8 +78,8 @@ public class GiveMeAnExcuse {
     	
     	long elapsed = (System.nanoTime() - startTime) / 1000000; //calculates difference then converts to milliseconds
     	
-    	append("Initialized in " + elapsed + "ms");
-    	append("Type 'help' for help.");
+    	append(INFO, "Initialized in " + elapsed + "ms");
+    	append(INFO, "Type 'help' for help.");
     }
     
     public static void createAndShowGUI() throws Exception{
@@ -190,16 +185,14 @@ public class GiveMeAnExcuse {
     	msgScanner.close();
     	append(COMMAND, msg);
     }
-    
-    public static void append(String msg) {
-    	append(INFO, msg);
-    }
-    
+        
     public static void append(int code, String msg) {
     	switch(code) {
     		case INFO: display.append("[INFO] "); break;
     		case COMMAND: display.append("[COMMAND] "); break;
     		case SEVERE: display.append("[SEVERE] "); break;
+    		case REQUEST: display.append("[REQUEST] "); break;
+    		case RESPONSE: display.append("[RESPONSE] "); break;
     	}
     	display.append(msg + "\n");
     }
@@ -280,7 +273,7 @@ public class GiveMeAnExcuse {
                 	MimeMessage message = new MimeMessage(session);  
 	                
 	                for (Address address : in) {
-	                	append("Request from: " + address.toString() + " [\"" + msg.getContent().toString().trim() + "\"]");
+	                	append(REQUEST, address.toString() + " [\"" + msg.getContent().toString().trim() + "\"]");
 	                	updateUsers(address.toString());
 	                    messagesReceived++;
 	                    message.setFrom(new InternetAddress(from));
@@ -289,7 +282,7 @@ public class GiveMeAnExcuse {
 
 	                    String exc = excuses.get(gen.nextInt(size));
 	                    message.setText(exc);
-	                    append("Responded with: " + exc);
+	                    append(RESPONSE, exc);
 	                    repliesSent++;
 	                    Transport transport = session.getTransport("smtp");
 	                    transport.connect("smtp.gmail.com", from, pass);
