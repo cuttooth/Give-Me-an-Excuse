@@ -93,6 +93,7 @@ public class GiveMeAnExcuse {
     	//set up jframe
     	JFrame frame = new JFrame();
     	
+    	frame.setTitle("Give Me an Excuse");
     	frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     	frame.setSize(WIDTH, HEIGHT);
     	frame.setLocationRelativeTo(null);
@@ -101,7 +102,7 @@ public class GiveMeAnExcuse {
     	Container pane = frame.getContentPane();
     	pane.setLayout(new BoxLayout(pane, BoxLayout.X_AXIS));
     	
-    	int statWidth = WIDTH / 4; //TODO may need to make this wider based on length of users
+    	int statWidth = WIDTH / 4;
     	int numbersHeight = 60;
     	
     	JPanel stats = new JPanel();
@@ -140,7 +141,7 @@ public class GiveMeAnExcuse {
     	JScrollPane playScroll = new JScrollPane(users);
     	playScroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
     	
-    	session.add(playScroll);//TODO uncomment these lines once you've thought of some stats
+    	session.add(playScroll);
     	
     	stats.add(numbers);
     	stats.add(session);
@@ -203,7 +204,6 @@ public class GiveMeAnExcuse {
     	display.append(msg + "\n");
     }
     
-    //TODO creates string of stats to set numbers's text to
     public static void formatStats() {
     	numbers.repaint();
     }
@@ -280,9 +280,7 @@ public class GiveMeAnExcuse {
                 	MimeMessage message = new MimeMessage(session);  
 	                
 	                for (Address address : in) {
-	                	//TODO casting to string will crash if user sends image, figure out best way to log body
-//	                	append("Request from: " + address.toString() + " [\"" + msg.getContent() + "\"]");
-//	                	append("Request from: " + address.toString() + " [\"" + ((String) msg.getContent()).trim() + "\"]");
+	                	append("Request from: " + address.toString() + " [\"" + msg.getContent().toString().trim() + "\"]");
 	                	updateUsers(address.toString());
 	                    messagesReceived++;
 	                    message.setFrom(new InternetAddress(from));
