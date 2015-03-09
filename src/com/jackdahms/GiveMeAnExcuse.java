@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
@@ -12,7 +13,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Scanner;
@@ -29,6 +32,7 @@ import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -45,6 +49,7 @@ public class GiveMeAnExcuse {
 	
 	private static String USER_NAME = "givemeanexcuse@gmail.com"; 
 	private static JTextArea display, users;
+	private static JPanel numbers;
 	
 	//stats
 	private static int messagesReceived = 0,
@@ -97,21 +102,34 @@ public class GiveMeAnExcuse {
     	pane.setLayout(new BoxLayout(pane, BoxLayout.X_AXIS));
     	
     	int statWidth = WIDTH / 4; //TODO may need to make this wider based on length of users
+    	int numbersHeight = 60;
     	
     	JPanel stats = new JPanel();
     	stats.setBorder(BorderFactory.createTitledBorder("Stats"));
     	stats.setMaximumSize(new Dimension(statWidth, HEIGHT));
-//    	stats.setLayout(new BoxLayout(stats, BoxLayout.Y_AXIS));
-    	stats.setLayout(new BorderLayout());
+    	stats.setLayout(new BoxLayout(stats, BoxLayout.Y_AXIS));
     	
-    	JTextArea numbers = new JTextArea();
-    	numbers.setFont(new Font("courier", Font.PLAIN, 12));
-    	numbers.setLineWrap(true);
-    	numbers.setWrapStyleWord(true);
-    	numbers.setEditable(false);
+    	numbers = new JPanel() {
+    		private static final long serialVersionUID = 1L;
+
+    		@Override    		    		
+    		public void paint(Graphics g) {
+    			g.setColor(Color.white);
+    			g.fillRect(0, 0, getWidth(), getHeight());
+    			g.setColor(Color.gray);
+    			g.drawRect(0, 0, getWidth() - 1, getHeight() - 1);
+    			g.setColor(Color.black);
+    			g.setFont(new Font("dialog", Font.PLAIN, 12));
+    			g.drawString("Messages received: " + messagesReceived, 10, 15);
+    			g.drawString("Replies sent: " + repliesSent, 10, 30);
+    			g.drawString("Unique users this session: " + uniqueUsersThisSession, 10, 45);
+    		}
+    	};
+    	numbers.setMaximumSize(new Dimension(numbers.getMaximumSize().width, numbersHeight));
     	    	
     	JPanel session = new JPanel();
     	session.setBorder(BorderFactory.createTitledBorder("Session"));
+    	session.setMaximumSize(new Dimension(session.getMaximumSize().width, HEIGHT - numbersHeight));
     	session.setLayout(new GridLayout(1, 1));
     	
     	users = new JTextArea();
@@ -124,8 +142,8 @@ public class GiveMeAnExcuse {
     	
     	session.add(playScroll);//TODO uncomment these lines once you've thought of some stats
     	
-    	stats.add(numbers, BorderLayout.NORTH);
-    	stats.add(session, BorderLayout.CENTER);
+    	stats.add(numbers);
+    	stats.add(session);
     	
     	JPanel log = new JPanel();
     	log.setBorder(BorderFactory.createTitledBorder("Log"));
@@ -159,6 +177,8 @@ public class GiveMeAnExcuse {
     	frame.setVisible(true);
     }
     
+    
+    //TODO 
     public static void command(String msg) {
     	Scanner msgScanner = new Scanner(msg);
     	if (msgScanner.next().equals("help")) {
@@ -185,10 +205,9 @@ public class GiveMeAnExcuse {
     
     //TODO creates string of stats to set numbers's text to
     public static void formatStats() {
-    	
+    	numbers.repaint();
     }
     
-    //TODO will add users to list if not already on it
     public static void updateUsers(String address) {
     	boolean unique = true;
     	for (String user : uniqueUsers)
@@ -199,6 +218,7 @@ public class GiveMeAnExcuse {
     		users.setText("");
     		for (String user : uniqueUsers) 
     			users.append(user + "\n");
+    		uniqueUsersThisSession = uniqueUsers.size();
     	}
     }
     
