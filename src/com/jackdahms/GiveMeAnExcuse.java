@@ -44,14 +44,14 @@ public class GiveMeAnExcuse {
 							SEVERE = 2;
 	
 	private static String USER_NAME = "givemeanexcuse@gmail.com"; 
-	private static JTextArea display;
+	private static JTextArea display, users;
 	
 	//stats
 	private static int messagesReceived = 0,
 			repliesSent = 0,
 			uniqueUsersThisSession = 0;
 	
-	private List<String> uniqueUsers = new ArrayList<String>();
+	private static List<String> uniqueUsers = new ArrayList<String>();
 		
 	private static int WIDTH = 850, HEIGHT = 550;
 		
@@ -114,12 +114,12 @@ public class GiveMeAnExcuse {
     	session.setBorder(BorderFactory.createTitledBorder("Session"));
     	session.setLayout(new GridLayout(1, 1));
     	
-    	JTextArea players = new JTextArea();
-    	players.setFont(new Font("courier", Font.PLAIN, 12));
-    	players.setLineWrap(true);
-    	players.setWrapStyleWord(true);
-    	players.setEditable(false);
-    	JScrollPane playScroll = new JScrollPane(players);
+    	users = new JTextArea();
+    	users.setFont(new Font("courier", Font.PLAIN, 12));
+    	users.setLineWrap(true);
+    	users.setWrapStyleWord(true);
+    	users.setEditable(false);
+    	JScrollPane playScroll = new JScrollPane(users);
     	playScroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
     	
     	session.add(playScroll);//TODO uncomment these lines once you've thought of some stats
@@ -190,7 +190,16 @@ public class GiveMeAnExcuse {
     
     //TODO will add users to list if not already on it
     public static void updateUsers(String address) {
-    	
+    	boolean unique = true;
+    	for (String user : uniqueUsers)
+    		if (user.equals(address))
+    			unique = false;
+    	if (unique) {
+    		uniqueUsers.add(address);
+    		users.setText("");
+    		for (String user : uniqueUsers) 
+    			users.append(user + "\n");
+    	}
     }
     
     public static void start() throws Exception{
@@ -251,7 +260,9 @@ public class GiveMeAnExcuse {
                 	MimeMessage message = new MimeMessage(session);  
 	                
 	                for (Address address : in) {
-	                	append("Request from: " + address.toString() + " [" + msg.getContent() + "]");
+	                	//TODO casting to string will crash if user sends image, figure out best way to log body
+//	                	append("Request from: " + address.toString() + " [\"" + msg.getContent() + "\"]");
+//	                	append("Request from: " + address.toString() + " [\"" + ((String) msg.getContent()).trim() + "\"]");
 	                	updateUsers(address.toString());
 	                    messagesReceived++;
 	                    message.setFrom(new InternetAddress(from));
@@ -261,7 +272,7 @@ public class GiveMeAnExcuse {
 	                    String exc = excuses.get(gen.nextInt(size));
 	                    message.setText(exc);
 	                    append("Responded with: " + exc);
-	                    
+	                    repliesSent++;
 	                    Transport transport = session.getTransport("smtp");
 	                    transport.connect("smtp.gmail.com", from, pass);
 	                    transport.sendMessage(message, message.getAllRecipients());
