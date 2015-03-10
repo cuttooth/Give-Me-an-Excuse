@@ -199,6 +199,7 @@ public class GiveMeAnExcuse {
     		case RESPONSE: display.append("[RESPONSE] "); break;
     	}
     	display.append(msg + "\n");
+    	display.setCaretPosition(display.getDocument().getLength());
     }
     
     public static void formatStats() {
