@@ -38,7 +38,7 @@ public class GiveMeAnExcuse {
 	
 	public static final int INFO = 0,
 							COMMAND = 1,
-							SEVERE = 2, //TODO remove throw statements, add tries and catches
+							SEVERE = 2,
 							REQUEST = 3,
 							RESPONSE = 4,
 							WARNING = 5;
@@ -77,7 +77,7 @@ public class GiveMeAnExcuse {
     			try {
 					start();
 				} catch (Exception e) {
-					e.printStackTrace();
+					append(SEVERE, "Could not start!");
 				}
     		}
     	});
