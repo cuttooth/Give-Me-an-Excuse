@@ -51,9 +51,15 @@ public class GiveMeAnExcuse {
 			repliesSent = 0,
 			uniqueUsersThisSession = 0;
 	
+	/**
+	 * help - displays all commands and a brief description
+	 * list - lists all excuses
+	 * blast - sends a message to every unique user this session
+	 */
+	
 	private static List<String> uniqueUsers = new ArrayList<String>();
 		
-	private static int WIDTH = 850, HEIGHT = 550;
+	private static int WIDTH = 900, HEIGHT = 550;
 		
     public static void main(String[] args) throws Exception{
     	
@@ -130,8 +136,8 @@ public class GiveMeAnExcuse {
     	
     	users = new JTextArea();
     	users.setFont(new Font("courier", Font.PLAIN, 12));
-    	users.setLineWrap(true);
-    	users.setWrapStyleWord(true);
+//    	users.setLineWrap(true);
+//    	users.setWrapStyleWord(true);
     	users.setEditable(false);
     	JScrollPane playScroll = new JScrollPane(users);
     	playScroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
@@ -148,8 +154,8 @@ public class GiveMeAnExcuse {
     	
     	display = new JTextArea();
     	display.setFont(new Font("courier", Font.PLAIN, 12));
-    	display.setLineWrap(true);
-    	display.setWrapStyleWord(true);
+//    	display.setLineWrap(true);
+//    	display.setWrapStyleWord(true);
     	display.setEditable(false);
     	JScrollPane dispScroll = new JScrollPane(display);
     	dispScroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
