@@ -40,7 +40,8 @@ public class GiveMeAnExcuse {
 							COMMAND = 1,
 							SEVERE = 2, //TODO remove throw statements, add tries and catches
 							REQUEST = 3,
-							RESPONSE = 4;
+							RESPONSE = 4,
+							WARNING = 5;
 	
 	private static String USER_NAME = "givemeanexcuse@gmail.com"; 
 	private static JTextArea display, users;
@@ -175,19 +176,28 @@ public class GiveMeAnExcuse {
     }
     
     
-    //TODO 
+     
     public static void command(String msg) {
     	Scanner msgScanner = new Scanner(msg);
-    	String first = msgScanner.next();
-    	if (first.equals("help")) {
-    		for (int i = 0; i < command.length; i++) 
-    			msg += "\n\t" + command[i] + " - " + desc[i];
-    	} else if (first.equals("list")) {
-    		for (int i = 0; i < excuses.size(); i++) 
-    			msg += "\n " + (i + 1) + ". " + excuses.get(i);
-    	} 
+    	String first = null;
+    	try {
+    		first = msgScanner.next();
+    		if (first.equals("help")) {
+        		for (int i = 0; i < command.length; i++) 
+        			msg += "\n\t" + command[i] + " - " + desc[i];
+            	append(COMMAND, msg);
+        	} else if (first.equals("list")) {
+        		for (int i = 0; i < excuses.size(); i++) 
+        			msg += "\n " + (i + 1) + ". " + excuses.get(i);
+            	append(COMMAND, msg);
+        	} else {
+        		msg = "[\"" + msg + "\"] is not recognized as a command...";
+        		append(INFO, msg);
+        	}
+    	} catch (Exception e) {
+    		append(WARNING, "Hey! You didn't type anything!");
+    	}    	
     	msgScanner.close();
-    	append(COMMAND, msg);
     }
         
     public static void append(int code, String msg) {
