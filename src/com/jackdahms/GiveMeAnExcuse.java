@@ -45,17 +45,17 @@ public class GiveMeAnExcuse {
 	private static String USER_NAME = "givemeanexcuse@gmail.com"; 
 	private static JTextArea display, users;
 	private static JPanel numbers;
+    private static List<String> excuses = new ArrayList<String>();
 	
 	//stats
 	private static int messagesReceived = 0,
 			repliesSent = 0,
 			uniqueUsersThisSession = 0;
-	
-	/**
-	 * help - displays all commands and a brief description
-	 * list - lists all excuses
-	 * blast - sends a message to every unique user this session
-	 */
+		
+	private static String[] command = {"help", "list"};
+	private static String[] desc = {"displays all commands and brief descriptions for each", 
+		"lists all excuses"
+	};
 	
 	private static List<String> uniqueUsers = new ArrayList<String>();
 		
@@ -136,8 +136,6 @@ public class GiveMeAnExcuse {
     	
     	users = new JTextArea();
     	users.setFont(new Font("courier", Font.PLAIN, 12));
-//    	users.setLineWrap(true);
-//    	users.setWrapStyleWord(true);
     	users.setEditable(false);
     	JScrollPane playScroll = new JScrollPane(users);
     	playScroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
@@ -154,13 +152,10 @@ public class GiveMeAnExcuse {
     	
     	display = new JTextArea();
     	display.setFont(new Font("courier", Font.PLAIN, 12));
-//    	display.setLineWrap(true);
-//    	display.setWrapStyleWord(true);
     	display.setEditable(false);
     	JScrollPane dispScroll = new JScrollPane(display);
     	dispScroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-    	
-    	
+    	    	
     	JTextField comm = new JTextField();
     	comm.setFont(new Font("courier", Font.PLAIN, 12));
     	comm.addActionListener(new ActionListener(){
@@ -183,11 +178,14 @@ public class GiveMeAnExcuse {
     //TODO 
     public static void command(String msg) {
     	Scanner msgScanner = new Scanner(msg);
-    	if (msgScanner.next().equals("help")) {
-//    		for (Command com : commands) {
-//    			
-//    		}
-    	}
+    	String first = msgScanner.next();
+    	if (first.equals("help")) {
+    		for (int i = 0; i < command.length; i++) 
+    			msg += "\n\t" + command[i] + " - " + desc[i];
+    	} else if (first.equals("list")) {
+    		for (int i = 0; i < excuses.size(); i++) 
+    			msg += "\n " + (i + 1) + ". " + excuses.get(i);
+    	} 
     	msgScanner.close();
     	append(COMMAND, msg);
     }
@@ -224,7 +222,6 @@ public class GiveMeAnExcuse {
     public static void start() throws Exception{
     	//things that only need to be set once
         String from = USER_NAME;
-        List<String> excuses = new ArrayList<String>();
         String pass;
         boolean alive = true;
         int oldCount;
