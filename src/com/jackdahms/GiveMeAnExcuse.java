@@ -19,6 +19,7 @@ import java.util.Scanner;
 import javax.mail.Address;
 import javax.mail.Folder;
 import javax.mail.Message;
+import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.Store;
 import javax.mail.Transport;
@@ -62,7 +63,7 @@ public class GiveMeAnExcuse {
 		
 	private static int WIDTH = 900, HEIGHT = 550;
 		
-    public static void main(String[] args) throws Exception{
+    public static void main(String[] args){
     	
     	long startTime = System.nanoTime();
     	
@@ -74,11 +75,7 @@ public class GiveMeAnExcuse {
     	
     	Thread worker = new Thread(new Runnable() {
     		public void run(){
-    			try {
-					start();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+				start();
     		}
     	});
     	worker.start();
@@ -89,9 +86,13 @@ public class GiveMeAnExcuse {
     	append(INFO, "Type 'help' for help.");
     }
     
-    public static void createAndShowGUI() throws Exception{
+    public static void createAndShowGUI(){
     	//set look and feel
-    	UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+    	try {
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} catch (Exception e) {
+			System.out.println("Could not set look and feel with UIManager!");
+		}
     	//set up jframe
     	JFrame frame = new JFrame();
     	
@@ -207,6 +208,7 @@ public class GiveMeAnExcuse {
     		case SEVERE: display.append("[SEVERE] "); break;
     		case REQUEST: display.append("[REQUEST] "); break;
     		case RESPONSE: display.append("[RESPONSE] "); break;
+    		case WARNING: display.append("[WARNING]"); break;
     	}
     	display.append(msg + "\n");
     	display.setCaretPosition(display.getDocument().getLength());
@@ -230,13 +232,13 @@ public class GiveMeAnExcuse {
     	}
     }
     
-    public static void start() throws Exception{
+    public static void start(){
     	//things that only need to be set once
         String from = USER_NAME;
         String pass;
         boolean alive = true;
-        int oldCount;
-        int newCount;
+        int oldCount = 0;
+        int newCount = 0;
         int diff = 0;
         int size;
         Random gen = new Random();
@@ -265,43 +267,76 @@ public class GiveMeAnExcuse {
         Session session = Session.getDefaultInstance(props);
         
         //for reading mail
-        Store store = session.getStore();
-        store.connect("imap.gmail.com", from, pass);
-        Folder inbox = store.getFolder("INBOX");
-        inbox.open(Folder.READ_ONLY);
-        oldCount = inbox.getMessageCount();
+        Store store;
+        Folder inbox = null;
+		try {
+			store = session.getStore();
+			store.connect("imap.gmail.com", from, pass);
+			inbox = store.getFolder("INBOX");
+			inbox.open(Folder.READ_ONLY);
+			oldCount = inbox.getMessageCount();
+		} catch (Exception e) {
+			append(SEVERE, "Could not open inbox!");
+		}
            
         while (alive) {
         	//detects new messages
-        	newCount = inbox.getMessageCount();
+        	try {
+				newCount = inbox.getMessageCount();
+			} catch (MessagingException e) {
+				append(SEVERE, "Could not get message count from inbox!");
+			}
         	diff = newCount - oldCount;
         	oldCount = newCount;
         	if (diff != 0) {
         		//loops in case incoming messages ever outpaces program
         		for (int i = 0; i < diff; i++) {
 	        		//read message
-	                Message msg = inbox.getMessage(inbox.getMessageCount() - i);
-	                Address[] in = msg.getFrom();
+	                Message msg = null;
+	                Address[] in = null;
+					try {
+						msg = inbox.getMessage(inbox.getMessageCount() - i);
+		                in = msg.getFrom();
+					} catch (MessagingException e) {
+						append(SEVERE, "Could not read message!");
+					}
                 
                 	//send message
                 	MimeMessage message = new MimeMessage(session);  
 	                
 	                for (Address address : in) {
-	                	append(REQUEST, address.toString() + " [\"" + msg.getContent().toString().trim() + "\"]");
+	                	try {
+							append(REQUEST, address.toString() + " [\"" + msg.getContent().toString().trim() + "\"]");
+						} catch (Exception e) {
+							append(WARNING, "Could not read body of message!");
+						}
 	                	updateUsers(address.toString());
 	                    messagesReceived++;
-	                    message.setFrom(new InternetAddress(from));
-	                    InternetAddress toAddress = new InternetAddress(address.toString());
-	                    message.setRecipient(Message.RecipientType.TO, toAddress);
+	                    InternetAddress toAddress;
+	                    try {
+	                    	message.setFrom(new InternetAddress(from));
+	                    	toAddress = new InternetAddress(address.toString());
+		                    message.setRecipient(Message.RecipientType.TO, toAddress);
+	                    } catch (Exception e) {
+	                    	append(SEVERE, "Could not address reply!");
+	                    }
 
 	                    String exc = excuses.get(gen.nextInt(size));
-	                    message.setText(exc);
+	                    try {
+							message.setText(exc);
+						} catch (MessagingException e) {
+							append(SEVERE, "Could not set reply text!");
+						}
 	                    append(RESPONSE, exc);
 	                    repliesSent++;
-	                    Transport transport = session.getTransport("smtp");
-	                    transport.connect("smtp.gmail.com", from, pass);
-	                    transport.sendMessage(message, message.getAllRecipients());
-	                    transport.close();	                    
+	                    try {
+		                    Transport transport = session.getTransport("smtp");
+		                    transport.connect("smtp.gmail.com", from, pass);
+		                    transport.sendMessage(message, message.getAllRecipients());
+		                    transport.close();
+	                    } catch (Exception e) {
+	                    	append(SEVERE, "Could not send reply!");
+	                    }
 	                }
         		}
         	}
