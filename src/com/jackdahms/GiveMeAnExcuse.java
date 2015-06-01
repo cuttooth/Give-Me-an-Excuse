@@ -54,23 +54,27 @@ public class GiveMeAnExcuse {
 			uniqueUsersThisSession = 0;
 		
 	private static String[] command = {"help", "list"};
-	private static String[] desc = {"displays all commands and brief descriptions for each", 
+	private static String[] desc = {"displays all commands with brief descriptions", 
 		"lists all excuses"
 	};
 	
 	private static List<String> uniqueUsers = new ArrayList<String>();
 		
 	private static int WIDTH = 900, HEIGHT = 550;
+	
+	//used in append method
+	static boolean gui = true;
 		
     public static void main(String[] args) throws Exception{
     	
     	long startTime = System.nanoTime();
     	
     	Arrays.sort(args);
-    	if (Arrays.binarySearch(args, "nogui") != -1)
-    		;
-    	else
+    	if (Arrays.binarySearch(args, "nogui") != -1) {
+        	gui = false;
+    	} else {
     		createAndShowGUI();
+    	}
     	
     	Thread worker = new Thread(new Runnable() {
     		public void run(){
@@ -175,7 +179,9 @@ public class GiveMeAnExcuse {
     	frame.setVisible(true);
     }
     
-    
+    public static void printlnNoGUI(String s) {
+    	System.console().writer().println(s);
+    }
      
     public static void command(String msg) {
     	Scanner msgScanner = new Scanner(msg);
@@ -201,15 +207,21 @@ public class GiveMeAnExcuse {
     }
         
     public static void append(int code, String msg) {
+    	String output = "";
     	switch(code) {
-    		case INFO: display.append("[INFO] "); break;
-    		case COMMAND: display.append("[COMMAND] "); break;
-    		case SEVERE: display.append("[SEVERE] "); break;
-    		case REQUEST: display.append("[REQUEST] "); break;
-    		case RESPONSE: display.append("[RESPONSE] "); break;
+    		case INFO: output += "[INFO] "; break;
+    		case COMMAND: output += "[COMMAND] "; break;
+    		case SEVERE: output += "[SEVERE] "; break;
+    		case REQUEST: output += "[REQUEST] "; break;
+    		case RESPONSE: output += "[RESPONSE] "; break;
     	}
-    	display.append(msg + "\n");
-    	display.setCaretPosition(display.getDocument().getLength());
+    	output += msg;
+    	if (gui) {
+    		display.append(msg + "\n");
+    		display.setCaretPosition(display.getDocument().getLength());
+    	} else {
+    		printlnNoGUI(output);
+    	}
     }
     
     public static void formatStats() {
