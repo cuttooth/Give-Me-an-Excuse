@@ -81,6 +81,7 @@ public class GiveMeAnExcuse {
     			try {
 					start();
 				} catch (Exception e) {
+					e.printStackTrace();
 					append(SEVERE, "Could not start!");
 				}
     		}
@@ -217,7 +218,7 @@ public class GiveMeAnExcuse {
     	}
     	output += msg;
     	if (gui) {
-    		display.append(msg + "\n");
+    		display.append(output + "\n");
     		display.setCaretPosition(display.getDocument().getLength());
     	} else {
     		printlnNoGUI(output);
