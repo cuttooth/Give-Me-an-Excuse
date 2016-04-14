@@ -53,9 +53,11 @@ public class GiveMeAnExcuse {
 			repliesSent = 0,
 			uniqueUsersThisSession = 0;
 		
-	private static String[] command = {"help", "list"};
+	private static String[] command = {"help", "list", "stats", "users"};
 	private static String[] desc = {"displays all commands with brief descriptions", 
-		"lists all excuses"
+		"lists all excuses",
+		"lists all stats",
+		"list unique users this session"
 	};
 	
 	private static List<String> uniqueUsers = new ArrayList<String>();
@@ -189,17 +191,26 @@ public class GiveMeAnExcuse {
     	String first = null;
     	try {
     		first = msgScanner.next();
-    		if (first.equals("help")) {
+    		if (first.equals(command[0])) { //help
         		for (int i = 0; i < command.length; i++) 
         			msg += "\n\t" + command[i] + " - " + desc[i];
             	append(COMMAND, msg);
-        	} else if (first.equals("list")) {
+        	} else if (first.equals(command[1])) { //list
         		for (int i = 0; i < excuses.size(); i++) 
-        			msg += "\n " + (i + 1) + ". " + excuses.get(i);
+        			msg += "\n\t" + (i + 1) + ". " + excuses.get(i);
             	append(COMMAND, msg);
-        	} else {
-        		msg = "[\"" + msg + "\"] is not recognized as a command...";
-        		append(INFO, msg);
+        	} else if (first.equals(command[2])) { //stats
+        		msg += "\n\tMessages received: " + messagesReceived;
+        		msg += "\n\tReplies sent: " + repliesSent;
+        		msg += "\n\tUnique users this session: " + uniqueUsersThisSession;
+        		append(COMMAND, msg);
+    		} else if (first.equals(command[3])) { 
+    			for (String s : uniqueUsers) 
+    				msg += "\n\t" + s;
+    			append(COMMAND, msg);
+    		} else {
+        		msg = "\"" + msg + "\" is not recognized as a command...";
+        		append(WARNING, msg);
         	}
     	} catch (Exception e) {
     		append(WARNING, "Hey! You didn't type anything!");
@@ -215,6 +226,7 @@ public class GiveMeAnExcuse {
     		case SEVERE: output += "[SEVERE] "; break;
     		case REQUEST: output += "[REQUEST] "; break;
     		case RESPONSE: output += "[RESPONSE] "; break;
+    		case WARNING: output += "[WARNING] "; break;
     	}
     	output += msg;
     	if (gui) {
